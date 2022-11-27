@@ -1,7 +1,14 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using Azure.Storage;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 using API.Attributes;
 using API.Examples;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
@@ -64,5 +71,44 @@ public class ReadProductController
         await res.WriteAsJsonAsync(product);
 
         return res;
+    }
+
+    // Get product image
+    [FunctionName(nameof(GetProductImage))]
+    [OpenApiOperation(nameof(GetProductImage), tags: new[] { "Products" })]
+    [OpenApiParameter("productImageId", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The product image identifier (guid)")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.Redirect)]
+    public static IActionResult GetProductImage(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/images/{productImageId}")] HttpRequest req, string productImageId,
+        [Blob(blobPath: "productImagesContainer/{productImageId}", Connection = "AzureWebJobsStorage")] BlobClient blob,
+        ILogger log)
+    {
+        log.LogInformation("C# HTTP trigger GetProductImage function processed an image retrieval request.");
+
+        // create a blob Shared Access Signature so the image can be requested for about an hour
+        BlobSasBuilder builder = new()
+        {
+            StartsOn = DateTime.UtcNow.AddMinutes(-5),
+            ExpiresOn = DateTime.UtcNow.AddHours(1),
+            BlobContainerName = blob.BlobContainerName,
+            BlobName = blob.Name,
+            ContentType = "image/png",
+        };
+
+        // set the permissions for the access to read only
+        builder.SetPermissions(BlobAccountSasPermissions.Read);
+
+        // create a credential to get access to the storage account shared blob file(s)
+        StorageSharedKeyCredential sasKey = new(
+            Environment.GetEnvironmentVariable("StorageAccountName", EnvironmentVariableTarget.Process),
+            Environment.GetEnvironmentVariable("StorageAccountKey", EnvironmentVariableTarget.Process)
+            );
+
+        // create and apply the blob sas query params using the credentials and build an accessable url to get access to the product image
+        BlobSasQueryParameters sas = builder.ToSasQueryParameters(sasKey);
+        string url = $"{blob.Uri}?{sas}";
+
+        // return the new redirection url to the product image file in blob storage
+        return new RedirectResult(url);
     }
 }

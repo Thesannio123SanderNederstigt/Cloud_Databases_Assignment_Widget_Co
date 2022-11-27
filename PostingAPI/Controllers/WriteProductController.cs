@@ -1,13 +1,18 @@
-﻿using System.IO;
-using System;
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using API.Attributes;
 using API.Examples;
 using AutoMapper;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
@@ -101,4 +106,38 @@ public class WriteProductController
 
         return req.CreateResponse(HttpStatusCode.OK);
     }
+
+    // Upload product image
+
+    [FunctionName(nameof(UploadProductImage))]
+    [OpenApiOperation(operationId: nameof(UploadProductImage), tags: new[] { "Products" })]
+    [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The product id parameter.")]
+    [OpenApiRequestBody(contentType: "multipart/form-data", bodyType: typeof(ProductImageDTO), Required = true, Description = "A single png image to upload as data for the product image")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.OK, Description = "The OK response after uploading the product image.")]
+    [OpenApiErrorResponse(HttpStatusCode.InternalServerError, Description = "An internal server error occured.")]
+        public static async Task<IActionResult> UploadProductImage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "products/imageUpload/{productId}")] HttpRequest req, string productId,
+            [Blob("productImagesContainer", Connection = "AzureWebJobsStorage")] BlobContainerClient blobs,
+            ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger UploadProductImage function processed a request.");
+
+            // check the required form data "uploadedFile" key and check the content of the uploaded images as value
+            IFormFile file = req.Form.Files["uploadedFile"];
+
+            if (file.ContentType != "image/png" || file == null)
+            {
+                return new BadRequestObjectResult("please upload a png type image file");
+            }
+
+            // create the blob client
+            BlobClient blob = blobs.GetBlobClient(productId);
+
+            // upload image to a blob in the container
+            await blob.UploadAsync(file.OpenReadStream(), new BlobHttpHeaders { ContentType = file.ContentType });
+
+            // return succesfull result message along with the created image id
+            return new OkObjectResult(new ImageFormResponseOk { ImageId = imageId });
+        }
+
 }
