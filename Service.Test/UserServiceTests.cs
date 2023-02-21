@@ -1,3 +1,5 @@
+using AutoMapper;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Model;
 using Model.DTO;
@@ -15,8 +17,18 @@ public class UserServiceTests
 
     public UserServiceTests()
     {
+        ServiceProvider services = new ServiceCollection()
+        .AddScoped<API.Mappings.UserConverter>()
+        .BuildServiceProvider();
+
+        IMapper mapper = new MapperConfiguration(c => {
+            c.ConstructServicesUsing(s => services.GetService(s));
+            c.AddMaps(typeof(API.Mappings.MappingProfile));
+        }).CreateMapper();
+
+
         _mockRepository = new();
-        _userService = new UserService(new LoggerFactory(), _mockRepository.Object);
+        _userService = new UserService(new LoggerFactory(), _mockRepository.Object, mapper);
     }
 
     [Fact]

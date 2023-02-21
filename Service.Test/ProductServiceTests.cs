@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Model;
 using Model.DTO;
+using Model.Response;
 using Moq;
 using Repository.Interfaces;
 using Service.Exceptions;
@@ -15,8 +18,18 @@ public class ProductServiceTests
 
     public ProductServiceTests()
     {
+
+        ServiceProvider services = new ServiceCollection()
+        .AddScoped<API.Mappings.ProductConverter>()
+        .BuildServiceProvider();
+
+        IMapper mapper = new MapperConfiguration(c => {
+            c.ConstructServicesUsing(s => services.GetService(s));
+            c.AddMaps(typeof(API.Mappings.MappingProfile));
+        }).CreateMapper();
+
         _mockRepository = new();
-        _productService = new ProductService(new LoggerFactory(), _mockRepository.Object);
+        _productService = new ProductService(new LoggerFactory(), _mockRepository.Object, mapper);
     }
 
     [Fact]
@@ -27,9 +40,9 @@ public class ProductServiceTests
             new Product("2", "USB-C to HDMI cable 5m", 15.99m, null!),
         };
 
-        _mockRepository.Setup(p => p.GetAllAsync()).Returns(mockProducts.ToAsyncEnumerable());
+        _mockRepository.Setup(p => p.Include(p => p.Reviews).GetAll()).Returns(mockProducts.ToAsyncEnumerable());
 
-        ICollection<Product> products = await _productService.GetProducts();
+        ICollection<ProductResponse> products = await _productService.GetProducts();
 
         Assert.Equal(2, products.Count);
     }

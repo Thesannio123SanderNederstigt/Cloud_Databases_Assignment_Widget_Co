@@ -1,3 +1,4 @@
+using API.Mappings;
 using API.Middleware;
 using Data;
 using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
@@ -20,10 +21,10 @@ IHost host = new HostBuilder()
 
         // I considered only having the Processing azure function application directly hooking/connecting up to the sql database,
         // but sending all dto data through a queue to that function isn't really feasable/practical in my opinion,
-        // so for demonstration purposes, the postOrder function is the only function doing this (and all the other read/write endpoints directly use/address the services (and repositories).... sorry
+        // so for demonstration purposes, the postOrder function is the only function doing this (and all the other read/write endpoints directly use/address the services (and repositories))
         services.AddDbContext<DataContext>(opts => {
-            opts.UseSqlServer(connectionString);
-            opts.EnableSensitiveDataLogging();
+            opts.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            //opts.EnableSensitiveDataLogging();
         });
 
         services.AddTransient<IUserRepository, UserRepository>();
@@ -36,7 +37,7 @@ IHost host = new HostBuilder()
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IReviewService, ReviewService>();
 
-        services.AddAutoMapper(typeof(Program));
+        services.AddAutoMapper(typeof(MappingProfile));
     })
     .ConfigureOpenApi()
     .Build();

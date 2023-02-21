@@ -45,7 +45,7 @@ public class ReadOrderController
     {
         _logger.LogInformation("C# HTTP trigger function processed the GetOrders request.");
 
-        ICollection<Order> orders = await _orderService.GetOrders();
+        ICollection<OrderResponse> orders = await _orderService.GetOrders();
         HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
 
         await res.WriteAsJsonAsync(orders);
@@ -57,7 +57,7 @@ public class ReadOrderController
 
     [Function(nameof(GetOrderById))]
     [OpenApiOperation(operationId: nameof(GetOrderById), tags: new[] { "Orders" }, Summary = "A single order", Description = "Will return a specified order.")]
-    [OpenApiParameter(name: "orderId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The order id parameter.")]
+    [OpenApiParameter(name: "orderId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The order id parameter.")]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(Order), Description = "A single retrieved order.", Example = typeof(OrderExample))]
     [OpenApiErrorResponse(HttpStatusCode.BadRequest, Description = "An error has occured while trying to retrieve the order.")]
     [OpenApiErrorResponse(HttpStatusCode.NotFound, Description = "Could not find the order.")]
@@ -68,7 +68,7 @@ public class ReadOrderController
 
         _logger.LogInformation("C# HTTP trigger function processed the GetOrderById request.");
 
-        Order order = await _orderService.GetOrderById(orderId);
+        OrderResponse order = await _orderService.GetOrderResById(orderId);
 
         HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
 

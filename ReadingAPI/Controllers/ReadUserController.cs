@@ -59,7 +59,7 @@ public class ReadUserController
 
     [Function(nameof(GetUserById))]
     [OpenApiOperation(operationId: nameof(GetUserById), tags: new[] { "Users" }, Summary = "A single user", Description = "Will return a specified user's info")]
-    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The user id parameter.")]
+    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The user id parameter.")]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(UserResponse), Description = "A single retrieved user.", Example = typeof(UserResponseExample))]
     [OpenApiErrorResponse(HttpStatusCode.BadRequest, Description = "An error has occured while trying to retrieve the user.")]
     [OpenApiErrorResponse(HttpStatusCode.NotFound, Description = "Could not find the user.")]

@@ -5,6 +5,9 @@ using Model.DTO;
 using Repository.Interfaces;
 using Service.Interfaces;
 using Service.Exceptions;
+using Model.Response;
+using AutoMapper;
+using Data;
 
 namespace Service;
 
@@ -14,19 +17,34 @@ public class OrderService : IOrderService
     private readonly IOrderRepository _orderRepository;
     private readonly IUserRepository _userRepository;
     private readonly IProductRepository _productRepository;
+    private readonly IMapper _mapper;
 
-    public OrderService(ILoggerFactory loggerFactory, IOrderRepository orderRepository, IUserRepository userRepository, IProductRepository productRepository)
+    public OrderService(ILoggerFactory loggerFactory, IOrderRepository orderRepository, IUserRepository userRepository, IProductRepository productRepository, IMapper mapper)
     {
         _logger = loggerFactory.CreateLogger<OrderService>();
         _orderRepository = orderRepository;
         _userRepository = userRepository;
         _productRepository = productRepository;
+        _mapper = mapper;
     }
 
-    // get orders
-    public async Task<ICollection<Order>> GetOrders()
+    // query aggregation in order to include the user, product and reviews when requesting (get) an order is the idea here
+    private IIncludableRepository<Order, Review> Query() => _orderRepository
+    .Include(o => o.User)
+    .Include(o => o.Products)
+    .ThenInclude(p => p.Reviews);
+
+    // get order responses
+    public async Task<ICollection<OrderResponse>> GetOrders()
     {
-        return await _orderRepository.GetAllAsync().ToArrayAsync() ?? throw new NotFoundException("orders");
+        return await Query().GetAll().Select(o => _mapper.Map<OrderResponse>(o)).ToArrayAsync() ?? throw new NotFoundException("orders");
+    }
+
+    // get order response
+    public async Task<OrderResponse> GetOrderResById(string orderId)
+    {
+        Order order = await Query().GetBy(o => o.OrderId == orderId) ?? throw new NotFoundException("order");
+        return _mapper.Map<OrderResponse>(order);
     }
 
     // get order
@@ -45,9 +63,16 @@ public class OrderService : IOrderService
 
         order.User = user;
 
-        order.OrderId = Guid.NewGuid().ToString();
+        if(orderDTO.OrderId != null)
+        {
+            order.OrderId = orderDTO.OrderId;
+        }
+        else
+        {
+            order.OrderId = Guid.NewGuid().ToString();
+        }
 
-        //get all the actual products and fill the collection with them (I guess?)
+        //get all the actual products
         ICollection<Product> orderedProducts = new List<Product>();
 
         decimal totalPrice = 0.0m;
@@ -59,6 +84,8 @@ public class OrderService : IOrderService
 
             totalPrice += product.Price;
         }
+
+        order.Products = orderedProducts;
 
         order.OrderDate = DateTime.UtcNow;
         order.Total = totalPrice;
@@ -99,6 +126,6 @@ public class OrderService : IOrderService
     // retrieve an unshipped order
     public async Task<Order> GetunprocessedOrder()
     {
-        return await _orderRepository.GetByAsync(o => o.IsProcessed == false) ?? throw new NotFoundException("an unshipped order");
+        return await _orderRepository.GetByAsync(o => o.IsProcessed == false) ?? throw new NotFoundException("unshipped order");
     }
 }

@@ -77,10 +77,13 @@ public class WriteReviewController
 
         string body = await new StreamReader(req.Body).ReadToEndAsync();
         UpdateReviewDTO updateReviewDTO = JsonConvert.DeserializeObject<UpdateReviewDTO>(body)!;
+        
+        Review updatedReview = await _reviewService.UpdateReview(reviewId, updateReviewDTO);
+        HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
 
-        await _reviewService.UpdateReview(reviewId, updateReviewDTO);
+        await res.WriteAsJsonAsync(updatedReview);
 
-        return req.CreateResponse(HttpStatusCode.OK);
+        return res;
 
     }
 

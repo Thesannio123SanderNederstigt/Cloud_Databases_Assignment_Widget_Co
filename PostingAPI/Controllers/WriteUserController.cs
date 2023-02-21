@@ -60,7 +60,7 @@ public class WriteUserController
 
     [Function(nameof(UpdateUser))]
     [OpenApiOperation(operationId: nameof(UpdateUser), tags: new[] { "Users" }, Summary = "Edit a user", Description = "Allows for modification of a user.")]
-    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The user id parameter.")]
+    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The user id parameter.")]
     [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UserDTO), Required = true, Description = "The edited user data.", Example = typeof(UserExample))]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(UserResponse), Description = "The updated user", Example = typeof(UserResponseExample))]
     [OpenApiErrorResponse(HttpStatusCode.BadRequest, Description = "An error occured while trying to update the user.")]
@@ -75,17 +75,21 @@ public class WriteUserController
         string body = await new StreamReader(req.Body).ReadToEndAsync();
         UserDTO updateUserDTO = JsonConvert.DeserializeObject<UserDTO>(body)!;
 
-        await _userService.UpdateUser(userId, updateUserDTO);
+        User updatedUser = await _userService.UpdateUser(userId, updateUserDTO);
+        UserResponse updatedUserResponse = _mapper.Map<UserResponse>(updatedUser);
 
-        return req.CreateResponse(HttpStatusCode.OK);
+        HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
 
+        await res.WriteAsJsonAsync(updatedUserResponse);
+
+        return res;
     }
 
     // Delete user
 
     [Function(nameof(DeleteUser))]
     [OpenApiOperation(operationId: nameof(DeleteUser), tags: new[] { "Users" }, Summary = "Delete a user", Description = "Allows for the deletion/removal of a user.")]
-    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The user id parameter.")]
+    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The user id parameter.")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.OK, Description = "The user has been deleted.")]
     [OpenApiErrorResponse(HttpStatusCode.NotFound, Description = "Could not find the user.")]
     [OpenApiErrorResponse(HttpStatusCode.InternalServerError, Description = "An internal server error occured.")]

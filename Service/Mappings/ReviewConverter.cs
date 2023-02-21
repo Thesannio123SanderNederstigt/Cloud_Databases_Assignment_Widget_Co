@@ -22,7 +22,7 @@ public class ReviewConverter : ITypeConverter<ReviewDTO, Task<Review>>
         {
             ReviewId = Guid.NewGuid().ToString(),
             Content = source.Content,
-            PostedOn = DateTime.UtcNow,
+            PostedOn = DateTime.UtcNow
         };
     }
 }

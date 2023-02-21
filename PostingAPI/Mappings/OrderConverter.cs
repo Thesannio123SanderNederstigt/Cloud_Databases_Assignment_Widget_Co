@@ -7,23 +7,18 @@ using System.Threading.Tasks;
 
 namespace API.Mappings;
 
-public class OrderConverter : ITypeConverter<OrderDTO, Task<Order>>
+public class OrderConverter : ITypeConverter<OrderDTO, Order>
 {
-    private readonly IUserService _userService;
-
-    public OrderConverter(IUserService userService)
+    public OrderConverter()
     {
-        _userService = userService;
     }
 
-    public async Task<Order> Convert(OrderDTO source, Task<Order> destination, ResolutionContext context)
+    public Order Convert(OrderDTO source, Order destination, ResolutionContext context)
     {
         return new() {
             OrderId = Guid.NewGuid().ToString(),
             OrderDate = DateTime.UtcNow,
-            //ShippingDate = null,
             IsProcessed = false,
-            User = await _userService.GetUserById(source.UserId),
         };
     }
 }

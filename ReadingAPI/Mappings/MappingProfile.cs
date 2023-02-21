@@ -8,6 +8,8 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        CreateMap<Order, OrderResponse>();
+        CreateMap<Product, ProductResponse>();
         CreateMap<User, UserResponse>();
     }
 }

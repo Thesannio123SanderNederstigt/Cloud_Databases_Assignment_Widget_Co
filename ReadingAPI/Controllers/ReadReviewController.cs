@@ -56,12 +56,12 @@ public class ReadReviewController
 
     [Function(nameof(GetReviewById))]
     [OpenApiOperation(operationId: nameof(GetReviewById), tags: new[] { "Reviews" }, Summary = "A single product review", Description = "Will return a specified product review.")]
-    [OpenApiParameter(name: "reviewId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The product id parameter.")]
+    [OpenApiParameter(name: "reviewId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The product id parameter.")]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(Review), Description = "A single retrieved product review.", Example = typeof(ReviewExample))]
     [OpenApiErrorResponse(HttpStatusCode.BadRequest, Description = "An error has occured while trying to retrieve the product review.")]
     [OpenApiErrorResponse(HttpStatusCode.NotFound, Description = "Could not find the product review.")]
     [OpenApiErrorResponse(HttpStatusCode.InternalServerError, Description = "An internal server error occured.")]
-    public async Task<HttpResponseData> GetReviewById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/{reviewId}")] HttpRequestData req,
+    public async Task<HttpResponseData> GetReviewById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "reviews/{reviewId}")] HttpRequestData req,
         string reviewId)
     {
 

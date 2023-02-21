@@ -22,8 +22,8 @@ IHost host = new HostBuilder()
         // but sending all dto data through a queue to that function isn't really feasable/practical in my opinion,
         // so for demonstration purposes, the postOrder function is the only function doing this (and all the other read/write endpoints directly use/address the services (and repositories).... sorry
         services.AddDbContext<DataContext>(opts => {
-            opts.UseSqlServer(connectionString);
-            opts.EnableSensitiveDataLogging();
+            opts.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            //opts.EnableSensitiveDataLogging();
         });
 
         services.AddTransient<IUserRepository, UserRepository>();

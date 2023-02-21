@@ -1,10 +1,12 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.WindowsAzure.Storage.Table;
-using System.ComponentModel.DataAnnotations;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Model;
-
-public class Order
+namespace Model.Response;
+public class OrderResponse
 {
     // attributes/properties
     [OpenApiProperty(Default = "69698004-438a-46e8-b81b-ef3507a4abe5", Description = "The id of an order", Nullable = false)]
@@ -22,28 +24,25 @@ public class Order
     [OpenApiProperty(Default = false, Description = "the processing status of the order", Nullable = false)]
     public bool IsProcessed { get; set; }
 
-    public User User { get; set; }
+    public string UserId { get; set; }
 
-    public virtual ICollection<Product> Products { get; set; }
+    public virtual ICollection<ProductResponse> Products { get; set; }
+
 
     // empty constructor
-    public Order()
+    public OrderResponse()
     {
     }
 
     // full constructor
-    public Order(string orderId, DateTime orderDate, DateTime? shippingDate, decimal total, bool isProcessed, User user, ICollection<Product> products)
+    public OrderResponse(string orderId, DateTime orderDate, DateTime? shippingDate, decimal total, bool isProcessed, string userId, ICollection<ProductResponse> products)
     {
         OrderId = orderId;
         OrderDate = orderDate;
         ShippingDate = shippingDate;
         Total = total;
         IsProcessed = isProcessed;
-        User = user;
+        UserId = userId;
         Products = products;
-
-        //PartitionKey = User.UserId;
-        //RowKey = orderId;
     }
-
 }

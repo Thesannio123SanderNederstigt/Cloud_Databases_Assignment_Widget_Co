@@ -10,7 +10,7 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<OrderDTO, Order>().ConvertUsing<OrderConverter>();
+        CreateMap<OrderDTO, Task<Order>>().ConvertUsing<OrderConverter>();
         CreateMap<Order, OrderResponse>();
         CreateMap<ProductDTO, Product>().ConvertUsing<ProductConverter>();
         CreateMap<Product, ProductResponse>();

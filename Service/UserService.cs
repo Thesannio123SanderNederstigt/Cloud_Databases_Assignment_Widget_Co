@@ -5,6 +5,7 @@ using Model.DTO;
 using Repository.Interfaces;
 using Service.Interfaces;
 using Service.Exceptions;
+using AutoMapper;
 
 namespace Service
 {
@@ -12,11 +13,13 @@ namespace Service
     {
         private readonly ILogger _logger;
         private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
-        public UserService(ILoggerFactory loggerFactory, IUserRepository userRepository)
+        public UserService(ILoggerFactory loggerFactory, IUserRepository userRepository, IMapper mapper)
         {
             _logger = loggerFactory.CreateLogger<UserService>();
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
         // get users

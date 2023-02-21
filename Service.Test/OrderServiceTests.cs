@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Model;
 using Model.DTO;
+using Model.Response;
 using Moq;
 using Repository.Interfaces;
 using Service.Exceptions;
@@ -17,23 +20,33 @@ public class OrderServiceTests
 
     public OrderServiceTests()
     {
+
+        ServiceProvider services = new ServiceCollection()
+        .AddScoped<API.Mappings.OrderConverter>()
+        .BuildServiceProvider();
+
+        IMapper mapper = new MapperConfiguration(c => {
+            c.ConstructServicesUsing(s => services.GetService(s));
+            c.AddMaps(typeof(API.Mappings.MappingProfile));
+        }).CreateMapper();
+
         _mockOrderRepository = new();
         _mockUserRepository = new();
         _mockProductRepository = new();
-        _orderService = new OrderService(new LoggerFactory(), _mockOrderRepository.Object, _mockUserRepository.Object, _mockProductRepository.Object);
+        _orderService = new OrderService(new LoggerFactory(), _mockOrderRepository.Object, _mockUserRepository.Object, _mockProductRepository.Object, mapper);
     }
 
     [Fact]
     public async Task Get_All_Orders_Should_Return_An_Array_Of_Orders()
     {
         Order[] mockOrders = new[] {
-            new Order("1", DateTime.Parse("2022-11-05 11:00:00"), DateTime.Parse("2022-09-12 15:25:00"), 30m, false, new User("1", "hdevries@mail.com", "HFreeze#902", "HFr33zing#1!", null!), null!),
-            new Order("2", DateTime.Parse("2022-12-05 10:56:12"),DateTime.Parse("2022-12-12 15:00:00"), 25m, false, new User("1", "hdevries@mail.com", "HFreeze#902", "HFr33zing#1!", null!), null!),
+            new Order("1", DateTime.Parse("2022-11-05 11:00:00"), DateTime.Parse("2022-09-12 15:25:00"), 30m, false, new User("1", "hdevries@mail.com", "HFreeze#902", "HFr33zing#1!", null!), new Product[] { new Product("1", "Apple EarPods Lightning", 10m, new Review[] { new Review("1", "This product is awful, would not buy again", DateTime.UtcNow, "1") }) }),
+            new Order("2", DateTime.Parse("2022-12-05 10:56:12"),DateTime.Parse("2022-12-12 15:00:00"), 25m, false, new User("1", "hdevries@mail.com", "HFreeze#902", "HFr33zing#1!", null!), new Product[] { new Product("2", "Apple EarPods Lightning", 10m, null!) }),
         };
 
-        _mockOrderRepository.Setup(o => o.GetAllAsync()).Returns(mockOrders.ToAsyncEnumerable());
+        _mockOrderRepository.Setup(o => o.Include(o => o.User).Include(o => o.Products).ThenInclude(p => p.Reviews).GetAll()).Returns(mockOrders.ToAsyncEnumerable());
 
-        ICollection<Order> orders = await _orderService.GetOrders();
+        ICollection<OrderResponse> orders = await _orderService.GetOrders();
 
         Assert.Equal(2, orders.Count);
     }
@@ -80,8 +93,7 @@ public class OrderServiceTests
         _mockProductRepository.Setup(p => p.GetByIdAsync("32698064-986w-98d1-dk8p-ef6587a4oye6")).ReturnsAsync(() => new Product("32698064-986w-98d1-dk8p-ef6587a4oye6", "Apple EarPods Lightning", 10m, null!));
         _mockProductRepository.Setup(p => p.GetByIdAsync("56487016-541l-845p-ol5f-pe86f2am98n1")).ReturnsAsync(() => new Product("56487016-541l-845p-ol5f-pe86f2am98n1", "USB-C to HDMI cable 5m", 15.99m, null!));
 
-
-        OrderDTO newOrderDTO = new( "1", 19.99m, new string[] { "32698064-986w-98d1-dk8p-ef6587a4oye6", "56487016-541l-845p-ol5f-pe86f2am98n1" }, "1");
+        OrderDTO newOrderDTO = new(null, new string[] { "32698064-986w-98d1-dk8p-ef6587a4oye6", "56487016-541l-845p-ol5f-pe86f2am98n1" }, "1");
         Order order = await _orderService.CreateOrder(newOrderDTO);
 
         Assert.NotNull(order.OrderId);

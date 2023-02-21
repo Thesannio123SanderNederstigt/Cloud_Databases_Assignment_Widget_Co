@@ -17,6 +17,10 @@ using Microsoft.OpenApi.Models;
 using Model;
 using Service.Interfaces;
 
+using HttpTriggerAttribute = Microsoft.Azure.Functions.Worker.HttpTriggerAttribute;
+using AuthorizationLevel = Microsoft.Azure.Functions.Worker.AuthorizationLevel;
+using Model.Response;
+
 namespace ReadingAPI.Controllers;
 
 public class ReadProductController
@@ -41,7 +45,7 @@ public class ReadProductController
     {
         _logger.LogInformation("C# HTTP trigger function processed the GetProducts request.");
 
-        ICollection<Product> products = await _productService.GetProducts();
+        ICollection<ProductResponse> products = await _productService.GetProducts();
         HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
 
         await res.WriteAsJsonAsync(products);
@@ -53,7 +57,7 @@ public class ReadProductController
 
     [Function(nameof(GetProductById))]
     [OpenApiOperation(operationId: nameof(GetProductById), tags: new[] { "Products" }, Summary = "A single product", Description = "Will return a specified product.")]
-    [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The product id parameter.")]
+    [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The product id parameter.")]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(Product), Description = "A single retrieved product.", Example = typeof(ProductExample))]
     [OpenApiErrorResponse(HttpStatusCode.BadRequest, Description = "An error has occured while trying to retrieve the product.")]
     [OpenApiErrorResponse(HttpStatusCode.NotFound, Description = "Could not find the product.")]
@@ -64,7 +68,7 @@ public class ReadProductController
 
         _logger.LogInformation("C# HTTP trigger function processed the GetProductById request.");
 
-        Product product = await _productService.GetProductById(productId);
+        ProductResponse product = await _productService.GetProductResById(productId);
 
         HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
 
@@ -74,16 +78,21 @@ public class ReadProductController
     }
 
     // Get product image
-    [FunctionName(nameof(GetProductImage))]
-    [OpenApiOperation(nameof(GetProductImage), tags: new[] { "Products" })]
-    [OpenApiParameter("productImageId", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The product image identifier (guid)")]
-    [OpenApiResponseWithoutBody(HttpStatusCode.Redirect)]
-    public static IActionResult GetProductImage(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/images/{productImageId}")] HttpRequest req, string productImageId,
-        [Blob(blobPath: "productImagesContainer/{productImageId}", Connection = "AzureWebJobsStorage")] BlobClient blob,
+    [Function(nameof(GetProductImage))]
+    [OpenApiOperation(nameof(GetProductImage), tags: new[] { "Products" }, Summary = "Get product image", Description = "Will return an image of a specified product.")]
+    [OpenApiParameter("productId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The product identifier (string)")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Redirect, Description = "Redirect to the image URL")]
+    public async Task<HttpResponseData> GetProductImage(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/images/{productId}")] HttpRequestData req, string productId,
         ILogger log)
     {
         log.LogInformation("C# HTTP trigger GetProductImage function processed an image retrieval request.");
+
+
+        string conn = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+
+        // create the blob client
+        BlobClient blob = new BlobClient(conn, "productimagescontainer", productId);
 
         // create a blob Shared Access Signature so the image can be requested for about an hour
         BlobSasBuilder builder = new()
@@ -108,7 +117,11 @@ public class ReadProductController
         BlobSasQueryParameters sas = builder.ToSasQueryParameters(sasKey);
         string url = $"{blob.Uri}?{sas}";
 
-        // return the new redirection url to the product image file in blob storage
-        return new RedirectResult(url);
+        HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
+
+        // return the new redirection url to the product image file in blob storage in an http response
+        await res.WriteAsJsonAsync(new RedirectResult(url));
+
+        return res;
     }
 }

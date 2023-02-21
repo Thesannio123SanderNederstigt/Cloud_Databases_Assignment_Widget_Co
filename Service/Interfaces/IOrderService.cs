@@ -1,11 +1,14 @@
 ﻿using Model;
 using Model.DTO;
+using Model.Response;
 
 namespace Service.Interfaces;
 
 public interface IOrderService
 {
-    public Task<ICollection<Order>> GetOrders();
+    public Task<ICollection<OrderResponse>> GetOrders();
+
+    Task<OrderResponse> GetOrderResById(string orderId);
 
     Task<Order> GetOrderById(string orderId);
 

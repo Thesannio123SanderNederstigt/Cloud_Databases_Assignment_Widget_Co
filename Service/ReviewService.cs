@@ -37,21 +37,13 @@ public class ReviewService : IReviewService
     // create a new review
     public async Task<Review> CreateReview(ReviewDTO reviewDTO)
     {
-        //removed/commented this out because this is now already done by the ReviewConverter mapper... (it literally does the same exact thing so why do it again here? pretty pointless...)
-
-        // ensure the product exists (or throw an exception if it doesn't)
-        /*Product reviewProduct = await _productRepository.GetByIdAsync(reviewDTO.ProductId) ?? throw new NotFoundException("product to review");
-
-        Review review = new();
-
-        review.Product = reviewProduct;*/
-
         Review review = new();
 
         review.ReviewId = Guid.NewGuid().ToString();
 
         review.Content = reviewDTO.Content;
-        review.Product = await _productRepository.GetByIdAsync(reviewDTO.ProductId) ?? throw new NotFoundException("product to review");
+
+        review.ProductId = reviewDTO.ProductId;
 
         review.PostedOn = DateTime.UtcNow;
 

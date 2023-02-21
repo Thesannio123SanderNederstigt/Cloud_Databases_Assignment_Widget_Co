@@ -22,6 +22,9 @@ using Model.Response;
 using Newtonsoft.Json;
 using Service.Interfaces;
 using Service;
+using HttpTriggerAttribute = Microsoft.Azure.Functions.Worker.HttpTriggerAttribute;
+using AuthorizationLevel = Microsoft.Azure.Functions.Worker.AuthorizationLevel;
+using HttpMultipartParser;
 
 namespace PostingAPI.Controllers;
 
@@ -56,9 +59,11 @@ public class WriteProductController
         Product product = _mapper.Map<Product>(productDTO);
         Product newProduct = await _productService.CreateProduct(product);
 
+        ProductResponse productResponse = _mapper.Map<ProductResponse>(newProduct);
+
         HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
 
-        await res.WriteAsJsonAsync(newProduct);
+        await res.WriteAsJsonAsync(productResponse);
 
         return res;
     }
@@ -67,7 +72,7 @@ public class WriteProductController
 
     [Function(nameof(UpdateProduct))]
     [OpenApiOperation(operationId: nameof(UpdateProduct), tags: new[] { "Products" }, Summary = "Edit a product", Description = "Allows for modification of a product.")]
-    [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The product id parameter.")]
+    [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The product id parameter.")]
     [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UpdateProductDTO), Required = true, Description = "The edited product data.", Example = typeof(UpdateProductExample))]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(Product), Description = "The updated product", Example = typeof(ProductExample))]
     [OpenApiErrorResponse(HttpStatusCode.BadRequest, Description = "An error occured while trying to update the product.")]
@@ -82,17 +87,21 @@ public class WriteProductController
         string body = await new StreamReader(req.Body).ReadToEndAsync();
         UpdateProductDTO updateProductDTO = JsonConvert.DeserializeObject<UpdateProductDTO>(body)!;
 
-        await _productService.UpdateProduct(productId, updateProductDTO);
+        Product updatedProduct = await _productService.UpdateProduct(productId, updateProductDTO);
+        ProductResponse updatedProductResponse = _mapper.Map<ProductResponse>(updatedProduct);
 
-        return req.CreateResponse(HttpStatusCode.OK);
+        HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
 
+        await res.WriteAsJsonAsync(updatedProductResponse);
+
+        return res;
     }
 
     // Delete product
 
     [Function(nameof(DeleteProduct))]
     [OpenApiOperation(operationId: nameof(DeleteProduct), tags: new[] { "Products" }, Summary = "Delete a product", Description = "Allows for the deletion/removal of a product.")]
-    [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The product id parameter.")]
+    [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The product id parameter.")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.OK, Description = "The product has been deleted.")]
     [OpenApiErrorResponse(HttpStatusCode.NotFound, Description = "Could not find the product.")]
     [OpenApiErrorResponse(HttpStatusCode.InternalServerError, Description = "An internal server error occured.")]
@@ -109,35 +118,47 @@ public class WriteProductController
 
     // Upload product image
 
-    [FunctionName(nameof(UploadProductImage))]
-    [OpenApiOperation(operationId: nameof(UploadProductImage), tags: new[] { "Products" })]
-    [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(Guid), Required = true, Description = "The product id parameter.")]
+    [Function(nameof(UploadProductImage))]
+    [OpenApiOperation(operationId: nameof(UploadProductImage), tags: new[] { "Products" }, Summary = "Upload a product image", Description = "Allows for an image of a product to be uploaded.")]
+    [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The product id parameter.")]
     [OpenApiRequestBody(contentType: "multipart/form-data", bodyType: typeof(ProductImageDTO), Required = true, Description = "A single png image to upload as data for the product image")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.OK, Description = "The OK response after uploading the product image.")]
     [OpenApiErrorResponse(HttpStatusCode.InternalServerError, Description = "An internal server error occured.")]
-        public static async Task<IActionResult> UploadProductImage(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "products/imageUpload/{productId}")] HttpRequest req, string productId,
-            [Blob("productImagesContainer", Connection = "AzureWebJobsStorage")] BlobContainerClient blobs,
-            ILogger log)
+    public static async Task<IActionResult> UploadProductImage(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "products/imageUpload/{productId}")] HttpRequestData req,
+        string productId)
+    {
+        //_logger.LogInformation("C# HTTP trigger UploadProductImage function processed a request.");
+
+        var parsedFormBody = MultipartFormDataParser.ParseAsync(req.Body);
+        //string body = await new StreamReader(req.Body).ReadToEndAsync();
+
+        if (parsedFormBody == null || parsedFormBody.Result.Files[0].ContentType != "image/png")
         {
-            log.LogInformation("C# HTTP trigger UploadProductImage function processed a request.");
-
-            // check the required form data "uploadedFile" key and check the content of the uploaded images as value
-            IFormFile file = req.Form.Files["uploadedFile"];
-
-            if (file.ContentType != "image/png" || file == null)
-            {
-                return new BadRequestObjectResult("please upload a png type image file");
-            }
-
-            // create the blob client
-            BlobClient blob = blobs.GetBlobClient(productId);
-
-            // upload image to a blob in the container
-            await blob.UploadAsync(file.OpenReadStream(), new BlobHttpHeaders { ContentType = file.ContentType });
-
-            // return succesfull result message along with the created image id
-            return new OkObjectResult(new ImageFormResponseOk { ImageId = imageId });
+            return new BadRequestObjectResult("please upload a png type image file");
         }
+
+        /*Product product = await _productService.GetProductById(productId);
+        if(product == null)
+        {
+            return new BadRequestObjectResult("the product id does not exist");
+        }*/
+
+        var file = parsedFormBody.Result.Files[0];
+
+        string conn = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+
+        // create the blob container client
+        BlobContainerClient blobs = new BlobContainerClient(conn, "productimagescontainer");
+
+        // create the blob client
+        BlobClient blob = blobs.GetBlobClient(productId);
+
+        // upload image to a blob in the container
+        await blob.UploadAsync(file.Data, new BlobHttpHeaders { ContentType = file.ContentType });
+
+        // return succesfull result message along with the created image id
+        return new OkObjectResult($"image successfully uploaded. product id: {productId}");
+    }
 
 }

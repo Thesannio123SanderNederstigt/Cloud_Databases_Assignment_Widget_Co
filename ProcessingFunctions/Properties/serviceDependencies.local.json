@@ -9,7 +9,7 @@
     },
     "mssql1": {
       "secretStore": null,
-      "type": "mssql.local",
+      "type": "mssql.onprem",
       "connectionId": "WidgetCoDataBase"
     }
   }

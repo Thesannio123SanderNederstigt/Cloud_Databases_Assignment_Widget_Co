@@ -5,6 +5,8 @@ using Model.DTO;
 using Repository.Interfaces;
 using Service.Interfaces;
 using Service.Exceptions;
+using AutoMapper;
+using Model.Response;
 
 namespace Service;
 
@@ -12,17 +14,30 @@ public class ProductService : IProductService
 {
     private readonly ILogger<ProductService> _logger;
     private readonly IProductRepository _productRepository;
+    private readonly IMapper _mapper;
 
-    public ProductService(ILoggerFactory loggerFactory, IProductRepository productRepository)
+    public ProductService(ILoggerFactory loggerFactory, IProductRepository productRepository, IMapper mapper)
     {
         _logger = loggerFactory.CreateLogger<ProductService>();
         _productRepository = productRepository;
+        _mapper = mapper;
     }
 
-    // get products
-    public async Task<ICollection<Product>> GetProducts()
+    //query aggregation in order to include the reviews of the products
+    private IIncludableRepository<Product, Review> Query() => _productRepository
+    .Include(p => p.Reviews);
+
+    // get product responses
+    public async Task<ICollection<ProductResponse>> GetProducts()
     {
-        return await _productRepository.GetAllAsync().ToArrayAsync() ?? throw new NotFoundException("products");
+        return await Query().GetAll().Select(p => _mapper.Map<ProductResponse>(p)).ToArrayAsync() ?? throw new NotFoundException("products");
+    }
+
+    // get product response 
+    public async Task<ProductResponse> GetProductResById(string productId)
+    {
+        Product product = await Query().GetBy(p => p.ProductId == productId) ?? throw new NotFoundException("product");
+        return _mapper.Map<ProductResponse>(product);
     }
 
     // get product
@@ -71,6 +86,4 @@ public class ProductService : IProductService
 
         _logger.LogInformation($"Delete order function deleted order: {product.ProductId}");
     }
-
-    // get product reviews? (include hier gaan toevoegen en dan voor een productId alle reviews ophalen... doen we al in t project voor andere models)
 }
