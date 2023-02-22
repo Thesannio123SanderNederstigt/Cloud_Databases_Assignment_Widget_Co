@@ -26,7 +26,12 @@ The way this third processing azure function app is set up (currently just for t
 This function reads a queue where DTO objects are send/posted to and then processes these into an SQL database for orders to relieve these other api function endpoints.
 
 The swagger specifications for these api azure function applications can be found here:
+
 Post API: https://cdb577208post.azurewebsites.net/api/swagger/ui
+
 Read API: https://cdb577208read.azurewebsites.net/api/swagger/ui
+
+The processing function app can be found here: 
+https://cdb577208processing.azurewebsites.net/api/swagger/ui
 
 
