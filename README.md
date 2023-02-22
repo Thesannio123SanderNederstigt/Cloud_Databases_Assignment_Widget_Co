@@ -1,5 +1,5 @@
 # Cloud_Databases_Assignment_Widget_Co
-This is a respository for my take on a school assignment for Cloud Databases ()
+This is a respository for my take on a school assignment for Cloud Databases (assignment 1 - the online store)
 
 This assignment reads as follows:
 ```
@@ -20,9 +20,9 @@ The proof of concept does not require a frontend!
 
 I created three azure function applications for this assignment.
 
-The application is split into two API azure function applications (one for all get and one for all post requests) and another function to process requests using Azure storage account queues.
+The application is split into two API azure function applications (one for read (select) and one for post (create, update, delete) requests) and another function to process requests using two Azure storage account queues and a timertrigger.
 
-The way this third processing azure function app is set up (currently just for the posting of orders) is technically how I wanted to handle all requests to the sql database (that way all requests would be posted to a queue and then read and processed into a SQL db).
+The way this third processing azure function app is set up (currently just for the posting of orders, and using two queues instead of just one which I would have done otherwise) is technically how I wanted to handle all requests to the sql database (that way all requests would be posted to a queue and then read and processed into a SQL db).
 This function reads a queue where DTO objects are send/posted to and then processes these into an SQL database for orders to relieve these other api function endpoints.
 
 The swagger specifications for these api azure function applications can be found here:
