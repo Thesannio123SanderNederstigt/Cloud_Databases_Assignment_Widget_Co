@@ -25,7 +25,7 @@ The application is split into two API azure function applications (one for read 
 The way this third processing azure function app is set up (currently just for the posting of orders, and using two queues instead of just one which I would have done otherwise) is technically how I wanted to handle all requests to the sql database (that way all requests would be posted to a queue and then read and processed into a SQL db).
 This function reads a queue where DTO objects are send/posted to and then processes these into an SQL database for orders to relieve these other api function endpoints.
 
-The swagger specifications for these api azure function applications can be found here:
+The openAPI swagger specifications for these api azure function applications can be found here:
 
 Post API: https://cdb577208post.azurewebsites.net/api/swagger/ui
 
