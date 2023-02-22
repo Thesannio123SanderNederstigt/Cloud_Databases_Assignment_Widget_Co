@@ -5,7 +5,6 @@ using Model.DTO;
 using Repository.Interfaces;
 using Service.Interfaces;
 using Service.Exceptions;
-using AutoMapper;
 
 namespace Service
 {
@@ -13,13 +12,11 @@ namespace Service
     {
         private readonly ILogger _logger;
         private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
 
-        public UserService(ILoggerFactory loggerFactory, IUserRepository userRepository, IMapper mapper)
+        public UserService(ILoggerFactory loggerFactory, IUserRepository userRepository)
         {
             _logger = loggerFactory.CreateLogger<UserService>();
             _userRepository = userRepository;
-            _mapper = mapper;
         }
 
         // get users
@@ -70,6 +67,5 @@ namespace Service
 
             _logger.LogInformation($"Delete user function deleted user {user.UserName} with id: {user.UserId}");
         }
-
     }
 }

@@ -3,7 +3,6 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Resolvers;
 using Model.DTO;
 using Newtonsoft.Json.Serialization;
 
-
 namespace API.Examples;
 
 public class UpdateProductExample : OpenApiExample<UpdateProductDTO>

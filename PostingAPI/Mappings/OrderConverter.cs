@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
 using Model;
 using Model.DTO;
-using Service.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 namespace API.Mappings;
 

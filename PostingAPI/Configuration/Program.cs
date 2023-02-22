@@ -9,7 +9,6 @@ using Repository;
 using Repository.Interfaces;
 using Service;
 using Service.Interfaces;
-using System;
 
 IHost host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults(worker => {

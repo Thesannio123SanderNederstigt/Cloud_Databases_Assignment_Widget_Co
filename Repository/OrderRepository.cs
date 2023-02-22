@@ -8,6 +8,5 @@ public class OrderRepository : Repository<Order, string>, IOrderRepository
 {
     public OrderRepository(DataContext context) : base(context, context.Orders)
     {
-
     }
 }

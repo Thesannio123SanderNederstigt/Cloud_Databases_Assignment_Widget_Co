@@ -1,33 +1,18 @@
 using API.Attributes;
 using API.Examples;
 using AutoMapper;
-using System.IO;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Model;
 using Model.DTO;
-using Model.Response;
 using Newtonsoft.Json;
-using Service.Exceptions;
 using Service.Interfaces;
-using Service;
 using HttpTriggerAttribute = Microsoft.Azure.Functions.Worker.HttpTriggerAttribute;
-using Azure.Storage.Queues.Models;
 using Azure.Storage.Queues;
-using Azure.Data.Tables;
-using System;
-using static System.Net.Mime.MediaTypeNames;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Buffers.Text;
-using System.Text;
 
 namespace PostingAPI.Controllers;
 
@@ -49,7 +34,7 @@ public class WriteOrderController
     }
 
     //use this function to process an orderDTO and post it to a queue
-    //[return: Queue("ordersqueue", Connection = "AzureWebJobsStorage")]
+    //[return: Queue("ordersqueue", Connection = "StorageConnection")]
     [Function(nameof(CreateOrder))]
     [OpenApiOperation(operationId: nameof(CreateOrder), tags: new[] { "Orders" }, Summary = "Create a new order", Description = "Will create the new order.")]
     [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(OrderDTO), Required = true, Description = "Data for the order that has to be created.", Example = typeof(OrderExample))]
@@ -67,7 +52,7 @@ public class WriteOrderController
 
         //await _orderService.CreateOrder(orderDTO);
 
-        string conn = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+        string conn = Environment.GetEnvironmentVariable("StorageConnection");
 
         // Create queue client and send message
         QueueClient queueClient = new QueueClient(conn, "ordersqueue", new QueueClientOptions

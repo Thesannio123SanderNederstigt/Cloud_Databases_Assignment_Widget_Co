@@ -1,8 +1,4 @@
-﻿using System.IO;
-using System;
-using System.Net;
-using System.Threading.Tasks;
-using API.Attributes;
+﻿using API.Attributes;
 using API.Examples;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -12,12 +8,9 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Model;
-using Model.DTO;
 using Model.Response;
-using Newtonsoft.Json;
 using Service.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net;
 
 namespace ReadingAPI.Controllers;
 
@@ -43,7 +36,6 @@ public class ReadUserController
     [OpenApiErrorResponse(HttpStatusCode.InternalServerError, Description = "An internal server error occured.")]
     public async Task<HttpResponseData> GetUsers([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "users")] HttpRequestData req)
     {
-
         _logger.LogInformation("C# HTTP trigger function processed the GetUsers request.");
 
         ICollection<User> users = await _userService.GetUsers();
@@ -67,7 +59,6 @@ public class ReadUserController
     public async Task<HttpResponseData> GetUserById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "users/{userId}")] HttpRequestData req,
         string userId)
     {
-
         _logger.LogInformation("C# HTTP trigger function processed the GetUser request.");
 
         User user = await _userService.GetUserById(userId);

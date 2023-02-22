@@ -4,21 +4,18 @@ using Model.DTO;
 using Moq;
 using Repository.Interfaces;
 using Service.Exceptions;
-using Service.Interfaces;
 using Xunit;
 namespace Service.Test;
 
 public class ReviewServiceTests
 {
     private readonly Mock<IReviewRepository> _mockReviewRepository;
-    private readonly Mock<IProductRepository> _mockProductRepository;
     private readonly ReviewService _reviewService;
 
     public ReviewServiceTests()
     {
         _mockReviewRepository = new();
-        _mockProductRepository = new();
-        _reviewService = new ReviewService(new LoggerFactory(), _mockReviewRepository.Object, _mockProductRepository.Object);
+        _reviewService = new ReviewService(new LoggerFactory(), _mockReviewRepository.Object);
     }
 
     [Fact]
@@ -67,11 +64,6 @@ public class ReviewServiceTests
         //setup review
         _mockReviewRepository.Setup(r => r.InsertAsync(It.IsAny<Review>())).Verifiable();
         _mockReviewRepository.Setup(r => r.SaveChanges()).Verifiable();
-
-        //setup products
-        _mockProductRepository.Setup(p => p.GetByIdAsync("32698064-986w-98d1-dk8p-ef6587a4oye6")).ReturnsAsync(() => new Product("32698064-986w-98d1-dk8p-ef6587a4oye6", "Apple EarPods Lightning", 10m, null!));
-        _mockProductRepository.Setup(p => p.GetByIdAsync("56487016-541l-845p-ol5f-pe86f2am98n1")).ReturnsAsync(() => new Product("56487016-541l-845p-ol5f-pe86f2am98n1", "USB-C to HDMI cable 5m", 15.99m, null!));
-
 
         ReviewDTO reviewDTO = new("This is a very good product, it works surprisingly well all the time, 10/10 would totally recommend", "32698064-986w-98d1-dk8p-ef6587a4oye6");
         Review review = await _reviewService.CreateReview(reviewDTO);

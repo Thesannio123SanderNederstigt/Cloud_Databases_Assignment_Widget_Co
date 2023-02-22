@@ -1,22 +1,12 @@
 ﻿using AutoMapper;
 using Model;
 using Model.DTO;
-using Service.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 namespace API.Mappings;
 
-public class ReviewConverter : ITypeConverter<ReviewDTO, Task<Review>>
+public class ReviewConverter : ITypeConverter<ReviewDTO, Review>
 {
-    private readonly IProductService _productService;
-
-    public ReviewConverter(IProductService productService)
-    {
-        _productService = productService;
-    }
-
-    public async Task<Review> Convert(ReviewDTO source, Task<Review> destination, ResolutionContext context)
+    public Review Convert(ReviewDTO source, Review destination, ResolutionContext context)
     {
         return new()
         {

@@ -21,14 +21,8 @@ public class UserServiceTests
         .AddScoped<API.Mappings.UserConverter>()
         .BuildServiceProvider();
 
-        IMapper mapper = new MapperConfiguration(c => {
-            c.ConstructServicesUsing(s => services.GetService(s));
-            c.AddMaps(typeof(API.Mappings.MappingProfile));
-        }).CreateMapper();
-
-
         _mockRepository = new();
-        _userService = new UserService(new LoggerFactory(), _mockRepository.Object, mapper);
+        _userService = new UserService(new LoggerFactory(), _mockRepository.Object);
     }
 
     [Fact]

@@ -1,9 +1,7 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Resolvers;
-using Model;
 using Model.DTO;
 using Newtonsoft.Json.Serialization;
-using System;
 
 namespace API.Examples;
 

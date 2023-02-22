@@ -1,13 +1,9 @@
-﻿using System.Linq;
-using System;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Model.Response;
 using Service.Exceptions;
-using System.Collections.Generic;
 
 namespace API.Middleware;
 

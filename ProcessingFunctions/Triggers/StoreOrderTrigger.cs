@@ -17,7 +17,7 @@ namespace ProcessingFunctions.Triggers
         }
 
         [FunctionName("StoreOrderTrigger")]
-        public async Task Run([QueueTrigger("ordersqueue", Connection = "AzureWebJobsStorage")] string orderQueueString, ILogger logger)
+        public async Task Run([QueueTrigger("ordersqueue", Connection = "StorageConnection")] string orderQueueString, ILogger logger)
         {
             logger.LogInformation($"C# Queue trigger function processed: StoreOrderTrigger");
 

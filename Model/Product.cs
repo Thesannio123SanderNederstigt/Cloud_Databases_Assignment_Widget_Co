@@ -10,8 +10,6 @@ public class Product
     [OpenApiProperty(Default = "USB-C to HDMI cable 5m", Description = "The productname of a product", Nullable = false)]
     public string ProductName { get; set; }
 
-    //public string? ImageId { get; set; } //voor nu enkele image (handmatig uploaden naar blob storage lokaal?), bij meerdere images dan apart Image model maken en hier een ICollection van maken zodat een image een productId krijgt!
-
     [OpenApiProperty(Default = "14.99", Description = "The price of a product", Nullable = false)]
     public decimal Price { get; set; }
 
@@ -31,6 +29,4 @@ public class Product
         Price = price;
         Reviews = reviews;
     }
-
-    //collection van reviews (en collection van orders, want ook al kan dit null zijn, een product kan in meerdere orders voor komen, of in geen) een product kan in VEEL orders voorkomen!
 }

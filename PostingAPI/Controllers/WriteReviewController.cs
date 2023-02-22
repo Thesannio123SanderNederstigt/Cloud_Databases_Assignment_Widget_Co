@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using API.Attributes;
 using API.Examples;
 using AutoMapper;
@@ -13,10 +10,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Model;
 using Model.DTO;
-using Model.Response;
 using Newtonsoft.Json;
 using Service.Interfaces;
-using Service;
 
 namespace PostingAPI.Controllers;
 
@@ -33,7 +28,6 @@ public class WriteReviewController
         _reviewService = reviewService;
     }
 
-
     // Post review
 
     [Function(nameof(CreateReview))]
@@ -49,7 +43,7 @@ public class WriteReviewController
         string body = await new StreamReader(req.Body).ReadToEndAsync();
         ReviewDTO reviewDTO = JsonConvert.DeserializeObject<ReviewDTO>(body)!;
 
-        //Review review = await _mapper.Map<Task<Review>>(reviewDTO);
+        //Review review = await _mapper.Map<Review>(reviewDTO);
         Review newReview = await _reviewService.CreateReview(reviewDTO);
 
         HttpResponseData res = req.CreateResponse(HttpStatusCode.OK);
@@ -84,7 +78,6 @@ public class WriteReviewController
         await res.WriteAsJsonAsync(updatedReview);
 
         return res;
-
     }
 
     // Delete review

@@ -28,7 +28,6 @@ public class OrderResponse
 
     public virtual ICollection<ProductResponse> Products { get; set; }
 
-
     // empty constructor
     public OrderResponse()
     {

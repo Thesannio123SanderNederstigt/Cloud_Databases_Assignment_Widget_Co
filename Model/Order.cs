@@ -45,5 +45,4 @@ public class Order
         //PartitionKey = User.UserId;
         //RowKey = orderId;
     }
-
 }

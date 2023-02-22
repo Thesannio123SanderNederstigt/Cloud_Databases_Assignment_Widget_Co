@@ -8,6 +8,5 @@ public class ProductRepository : Repository<Product, string>, IProductRepository
 {
     public ProductRepository(DataContext context) : base (context, context.Products)
     {
-
     }
 }

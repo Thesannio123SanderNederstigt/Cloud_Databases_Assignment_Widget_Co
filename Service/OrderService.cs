@@ -7,7 +7,6 @@ using Service.Interfaces;
 using Service.Exceptions;
 using Model.Response;
 using AutoMapper;
-using Data;
 
 namespace Service;
 
@@ -121,7 +120,6 @@ public class OrderService : IOrderService
 
         _logger.LogInformation($"Delete order function deleted order: {order.OrderId}");
     }
-
 
     // retrieve an unshipped order
     public async Task<Order> GetunprocessedOrder()

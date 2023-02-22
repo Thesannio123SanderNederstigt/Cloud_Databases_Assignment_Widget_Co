@@ -5,7 +5,6 @@ using Model.DTO;
 using Repository.Interfaces;
 using Service.Interfaces;
 using Service.Exceptions;
-using Repository;
 
 namespace Service;
 
@@ -13,13 +12,11 @@ public class ReviewService : IReviewService
 {
     private readonly ILogger<ReviewService> _logger;
     private readonly IReviewRepository _reviewRepository;
-    private readonly IProductRepository _productRepository;
 
-    public ReviewService(ILoggerFactory loggerFactory, IReviewRepository reviewRepository, IProductRepository productRepository)
+    public ReviewService(ILoggerFactory loggerFactory, IReviewRepository reviewRepository)
     {
         _logger = loggerFactory.CreateLogger<ReviewService>();
         _reviewRepository = reviewRepository;
-        _productRepository = productRepository;
     }
 
     // get reviews

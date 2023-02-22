@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using API.Attributes;
 using API.Examples;
 using AutoMapper;
@@ -9,10 +6,8 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
@@ -21,7 +16,6 @@ using Model.DTO;
 using Model.Response;
 using Newtonsoft.Json;
 using Service.Interfaces;
-using Service;
 using HttpTriggerAttribute = Microsoft.Azure.Functions.Worker.HttpTriggerAttribute;
 using AuthorizationLevel = Microsoft.Azure.Functions.Worker.AuthorizationLevel;
 using HttpMultipartParser;
@@ -129,8 +123,8 @@ public class WriteProductController
         string productId)
     {
         //_logger.LogInformation("C# HTTP trigger UploadProductImage function processed a request.");
+        Task<MultipartFormDataParser> parsedFormBody = MultipartFormDataParser.ParseAsync(req.Body);
 
-        var parsedFormBody = MultipartFormDataParser.ParseAsync(req.Body);
         //string body = await new StreamReader(req.Body).ReadToEndAsync();
 
         if (parsedFormBody == null || parsedFormBody.Result.Files[0].ContentType != "image/png")
@@ -144,9 +138,9 @@ public class WriteProductController
             return new BadRequestObjectResult("the product id does not exist");
         }*/
 
-        var file = parsedFormBody.Result.Files[0];
+        FilePart file = parsedFormBody.Result.Files[0];
 
-        string conn = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+        string conn = Environment.GetEnvironmentVariable("StorageConnection");
 
         // create the blob container client
         BlobContainerClient blobs = new BlobContainerClient(conn, "productimagescontainer");
@@ -160,5 +154,4 @@ public class WriteProductController
         // return succesfull result message along with the created image id
         return new OkObjectResult($"image successfully uploaded. product id: {productId}");
     }
-
 }

@@ -138,5 +138,4 @@ public class ProductServiceTests
 
         Assert.ThrowsAsync<NotFoundException>(() => _productService.DeleteProduct("naN"));
     }
-
 }

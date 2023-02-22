@@ -2,7 +2,6 @@
 using Model;
 using Model.DTO;
 using Model.Response;
-using System.Threading.Tasks;
 
 namespace API.Mappings;
 
@@ -14,7 +13,7 @@ public class MappingProfile : Profile
         CreateMap<Order, OrderResponse>();
         CreateMap<ProductDTO, Product>().ConvertUsing<ProductConverter>();
         CreateMap<Product, ProductResponse>();
-        CreateMap<ReviewDTO, Task<Review>>().ConvertUsing<ReviewConverter>();
+        CreateMap<ReviewDTO, Review>().ConvertUsing<ReviewConverter>();
         CreateMap<User, UserResponse>();
         CreateMap<UserDTO, User>().ConvertUsing<UserConverter>();
     }

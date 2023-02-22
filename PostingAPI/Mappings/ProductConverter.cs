@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Model;
 using Model.DTO;
-using System;
 
 namespace API.Mappings;
 

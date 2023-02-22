@@ -1,10 +1,5 @@
-﻿using System.IO;
-using System;
-using System.Net;
-using System.Threading.Tasks;
-using API.Attributes;
+﻿using API.Attributes;
 using API.Examples;
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -12,13 +7,8 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Model;
-using Model.DTO;
-using Model.Response;
-using Newtonsoft.Json;
 using Service.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
-using Service;
+using System.Net;
 
 namespace ReadingAPI.Controllers;
 
@@ -64,7 +54,6 @@ public class ReadReviewController
     public async Task<HttpResponseData> GetReviewById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "reviews/{reviewId}")] HttpRequestData req,
         string reviewId)
     {
-
         _logger.LogInformation("C# HTTP trigger function processed the GetReviewById request.");
 
         Review review = await _reviewService.GetReviewById(reviewId);

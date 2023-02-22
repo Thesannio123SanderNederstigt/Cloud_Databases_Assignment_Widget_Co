@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using API.Attributes;
 using API.Examples;
 using AutoMapper;

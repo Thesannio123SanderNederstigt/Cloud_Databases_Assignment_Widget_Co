@@ -8,7 +8,6 @@ using Repository;
 using Repository.Interfaces;
 using Service;
 using Service.Interfaces;
-using System;
 
 IHost host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults(worker => {
@@ -20,7 +19,7 @@ IHost host = new HostBuilder()
 
         // I considered only having the Processing azure function application directly hooking/connecting up to the sql database,
         // but sending all dto data through a queue to that function isn't really feasable/practical in my opinion,
-        // so for demonstration purposes, the postOrder function is the only function doing this (and all the other read/write endpoints directly use/address the services (and repositories).... sorry
+        // so for demonstration purposes, the postOrder function is the only function doing this (and all the other read/write endpoints directly use/address the services (and repositories)
         services.AddDbContext<DataContext>(opts => {
             opts.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
             //opts.EnableSensitiveDataLogging();

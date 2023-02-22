@@ -20,12 +20,12 @@ public class ShipTimeTrigger
     }
 
     //timetrigger that checks every 15th minute and when there is an unprocessed (unshipped) order it will post a message to a queue
-    //to ensure that a shipment for orders is done (and then the ShipOrderTrigger queuetrigger will update the order using the UpdateOrderDTO sent to the queue from here)
-    [return: Queue("shipmentsqueue", Connection = "AzureWebJobsStorage")]
+    //to ensure that a shipment for orders is done (and then the ShipOrderTrigger queuetrigger will update the order using the UpdateOrderDTO sent to the queue from here after which 5 seconds is waited to ensure the same order can be processed before checking again)
+    [return: Queue("shipmentsqueue", Connection = "StorageConnection")]
     [FunctionName("ShipOrdersTimeTrigger")]
     public async Task ShipOrdersTimeTrigger(
     [TimerTrigger("0 */15 * * * *")] TimerInfo timerInfo,
-    [Queue("shipmentsqueue", Connection = "AzureWebJobsStorage")] QueueClient shipmentQueue, ILogger logger)
+    [Queue("shipmentsqueue", Connection = "StorageConnection")] QueueClient shipmentQueue, ILogger logger)
     {
         try
         {

@@ -1,25 +1,21 @@
-﻿using System;
-using System.Net;
+﻿using AuthorizationLevel = Microsoft.Azure.Functions.Worker.AuthorizationLevel;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 using API.Attributes;
 using API.Examples;
+using HttpTriggerAttribute = Microsoft.Azure.Functions.Worker.HttpTriggerAttribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Model;
-using Service.Interfaces;
-
-using HttpTriggerAttribute = Microsoft.Azure.Functions.Worker.HttpTriggerAttribute;
-using AuthorizationLevel = Microsoft.Azure.Functions.Worker.AuthorizationLevel;
 using Model.Response;
+using Service.Interfaces;
+using System.Net;
 
 namespace ReadingAPI.Controllers;
 
@@ -65,7 +61,6 @@ public class ReadProductController
     public async Task<HttpResponseData> GetProductById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/{productId}")] HttpRequestData req,
         string productId)
     {
-
         _logger.LogInformation("C# HTTP trigger function processed the GetProductById request.");
 
         ProductResponse product = await _productService.GetProductResById(productId);
@@ -78,21 +73,21 @@ public class ReadProductController
     }
 
     // Get product image
+
     [Function(nameof(GetProductImage))]
     [OpenApiOperation(nameof(GetProductImage), tags: new[] { "Products" }, Summary = "Get product image", Description = "Will return an image of a specified product.")]
     [OpenApiParameter("productId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The product identifier (string)")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Redirect, Description = "Redirect to the image URL")]
     public async Task<HttpResponseData> GetProductImage(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/images/{productId}")] HttpRequestData req, string productId,
-        ILogger log)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/images/{productId}")] HttpRequestData req,
+        string productId)
     {
-        log.LogInformation("C# HTTP trigger GetProductImage function processed an image retrieval request.");
+        _logger.LogInformation("C# HTTP trigger GetProductImage function processed an image retrieval request.");
 
-
-        string conn = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+        string storageConn = Environment.GetEnvironmentVariable("StorageConnection");
 
         // create the blob client
-        BlobClient blob = new BlobClient(conn, "productimagescontainer", productId);
+        BlobClient blob = new BlobClient(storageConn, "productimagescontainer", productId);
 
         // create a blob Shared Access Signature so the image can be requested for about an hour
         BlobSasBuilder builder = new()

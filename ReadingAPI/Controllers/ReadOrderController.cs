@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using API.Attributes;
 using API.Examples;
 using AutoMapper;
@@ -12,12 +9,8 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Model;
-using Model.DTO;
 using Model.Response;
-using Newtonsoft.Json;
 using Service.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ReadingAPI.Controllers;
 
@@ -65,7 +58,6 @@ public class ReadOrderController
     public async Task<HttpResponseData> GetOrderById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "orders/{orderId}")] HttpRequestData req,
         string orderId)
     {
-
         _logger.LogInformation("C# HTTP trigger function processed the GetOrderById request.");
 
         OrderResponse order = await _orderService.GetOrderResById(orderId);
