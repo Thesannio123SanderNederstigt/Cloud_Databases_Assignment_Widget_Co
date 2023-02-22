@@ -117,26 +117,26 @@ public class WriteProductController
     [OpenApiParameter(name: "productId", In = ParameterLocation.Path, Type = typeof(string), Required = true, Description = "The product id parameter.")]
     [OpenApiRequestBody(contentType: "multipart/form-data", bodyType: typeof(ProductImageDTO), Required = true, Description = "A single png image to upload as data for the product image")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.OK, Description = "The OK response after uploading the product image.")]
+    [OpenApiErrorResponse(HttpStatusCode.NotFound, Description = "Could not find the product.")]
     [OpenApiErrorResponse(HttpStatusCode.InternalServerError, Description = "An internal server error occured.")]
-    public static async Task<IActionResult> UploadProductImage(
+    public async Task<IActionResult> UploadProductImage(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "products/imageUpload/{productId}")] HttpRequestData req,
         string productId)
     {
-        //_logger.LogInformation("C# HTTP trigger UploadProductImage function processed a request.");
-        Task<MultipartFormDataParser> parsedFormBody = MultipartFormDataParser.ParseAsync(req.Body);
+        _logger.LogInformation("C# HTTP trigger UploadProductImage function processed a request.");
 
-        //string body = await new StreamReader(req.Body).ReadToEndAsync();
+        Task<MultipartFormDataParser> parsedFormBody = MultipartFormDataParser.ParseAsync(req.Body);
 
         if (parsedFormBody == null || parsedFormBody.Result.Files[0].ContentType != "image/png")
         {
             return new BadRequestObjectResult("please upload a png type image file");
         }
 
-        /*Product product = await _productService.GetProductById(productId);
+        Product product = await _productService.GetProductById(productId);
         if(product == null)
         {
             return new BadRequestObjectResult("the product id does not exist");
-        }*/
+        }
 
         FilePart file = parsedFormBody.Result.Files[0];
 

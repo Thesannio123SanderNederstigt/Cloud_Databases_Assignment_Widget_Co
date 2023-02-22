@@ -2,5 +2,6 @@ bin
 obj
 .vs
 PublishProfiles
+ServiceDependencies
 .editorconfig
 local.settings.json
